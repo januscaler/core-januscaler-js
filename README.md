@@ -2,36 +2,30 @@
 
 A core js library implementing only core apis of januscaler without webrtc
 
-## Usage
+## Consumer Level Architecture
+
+1. VideoCall Operations Example
 
 ```ts
-const rediFlow = new RediFlow({});
-const stream = rediFlow.createStream('mystream');
+import { JanuScaler } from '@januscaler/browser-sdk';
 
-const replica2 = await stream.createConsumerGroup(stream.streamName, 'replica-2', { startId: '$' });
-const replica1 = await stream.createConsumerGroup(stream.streamName, 'replica-1', { startId: '$' });
+const client = new JanuScaler({
+	token: `secure access token from backend-sdk or trusted source`
+});  
 
-const replica1Observable = await replica1.observeStream(1);
-const replica2Observable = await replica2.observeStream(1);
+await client.init({ debug: false });  
 
-replica1Observable.subscribe(async ({ ids, data }) => {
-	console.log({ handledBy: 'replica-1', data, ids });
-	await replica1.acknowledge(ids);
-	await stream.delete(ids);
-});
+const videoCallHandle = await client.videoCall.createServiceHandle();  
 
-replica2Observable.subscribe(async ({ ids, data }) => {
-	console.log({ handledBy: 'replica-2', data, ids });
-	await replica1.acknowledge(ids);
-	await stream.delete(ids);
-});
-
-await stream.addToStream({ cool: { boom: 1 } }, '*');
-await stream.addToStream({ cool: { boom: 2 } }, '*');
-await stream.addToStream({ cool: { boom: 3 } }, '*');
-await stream.addToStream({ cool: { boom: 4 } }, '*');
-await stream.addToStream({ cool: { boom: 5 } }, '*');
-await stream.addToStream({ cool: { boom: 6 } }, '*');
+videoCallHandle.eventStream.subscribe((event) => {});
+videoCallHandle.events.onRegistered = (registeredEvent) => {};
+videoCallHandle.events.onIncomingCall = (callerEvent) => {};
+function registerUser(userNameToRegister) {
+	return await videoCallHandle.register(userNameToRegister);
+}
+function callUser(userNameToCall) {
+	return await videoCallHandle.call(userNameToCall)
+}
 ```
 
 ## LICENSE
