@@ -28,6 +28,16 @@
 		"build:js": "rollup -c",
 		"build:types": "tsc --emitDeclarationOnly"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/januscaler/core-januscaler-js.git"
+	},
+	"bugs": {
+		"url": "https://github.com/januscaler/core-januscaler-js/issues"
+	},
+	"publishConfig": {
+		"@januscaler:registry": "https://npm.pkg.github.com"
+	},
 	"dependencies": {
 		"ioredis": "5.3.2",
 		"lodash": "^4.17.21",
