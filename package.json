@@ -11,15 +11,16 @@
 	"author": "shivanshtalwar0 <shivanshtalwar0@gmail.com>",
 	"exports": {
 		".": {
-			"types": "./dist/types",
-			"import": "./dist/index.es.js",
-			"require": "./dist/index.js"
+			"import": "./dist/esm/index.mjs",
+			"require": "./dist/cjs/index.cjs",
+			"types": "./dist/index.d.ts",
+			"default": "./dist/esm/index.mjs"
 		}
 	},
-	"main": "./dist/index.js",
-	"module": "./dist/index.es.js",
-	"browser": "./dist/index.umd.js",
-	"types": "./dist/types",
+	"typings": "dist/index.d.ts",
+	"main": "dist/cjs/index.cjs",
+	"module": "dist/esm/index.mjs",
+	"types": "dist/index.d.ts",
 	"files": [
 		"dist"
 	],
