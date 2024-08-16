@@ -1,5 +1,5 @@
 {
-	"name": "core-januscaler-js",
+	"name": "@januscaler/core-januscaler-js",
 	"version": "1.0.0",
 	"description": "A core js library implementing only core apis of januscaler without webrtc",
 	"keywords": [
