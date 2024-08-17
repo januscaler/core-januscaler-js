@@ -61,7 +61,6 @@ export default [
 				? esbuild()
 				: typescript({
 						noEmitOnError: useThrowOnError,
-						removeComments: true
 				  })
 		]
 	},
@@ -92,8 +91,7 @@ export default [
 			useEsbuild
 				? esbuild()
 				: typescript({
-						noEmitOnError: useThrowOnError,
-						removeComments: true
+						noEmitOnError: useThrowOnError
 				  })
 		]
 	},
