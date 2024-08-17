@@ -42,7 +42,6 @@ export class WebSocketClient {
         if (this.token) {
             data.token = this.token
         }
-        console.log(data)
         const json = JSON.stringify(data, replacer)
         return this.send(json)
     }

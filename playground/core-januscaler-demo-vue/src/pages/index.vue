@@ -11,7 +11,9 @@ const client=new JanuScalerJs(new WebSocketClient('ws://127.0.0.1:8188',{
     protocols:'januscaler-protocol'
 }))
 const session=await client.createSession()
-const videocall=await session.attach(JanuScalerVideoCallPlugin,{})
+const videoCall=await session.attach(JanuScalerVideoCallPlugin)
+const registered=await videoCall.register('tebby','zopper')
+console.log(registered)
 
 
 console.log(session.sessionId)
