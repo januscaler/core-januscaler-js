@@ -20,7 +20,7 @@ export class WebSocketClient {
 
     ) {
         this.protocols = protocols ?? 'januscaler-protocol'
-        this.timeout = timeout ?? 3000
+        this.timeout = timeout ?? 8000
         this.token = token
         this.apiSecret = apiSecret
     }
@@ -31,7 +31,8 @@ export class WebSocketClient {
         this.onMessage.unsubscribe()
     }
 
-    send(data: string) {
+    async send(data: string) {
+        // await this.init()
         this.webSocket.send(data)
     }
 
@@ -49,11 +50,10 @@ export class WebSocketClient {
     sendJsonSync(data: any, predicate?: (data: any) => boolean, replacer?: (this: any, key: string, value: any) => any) {
         data.transaction = data.transaction ? data.transaction : v4()
         predicate = predicate ? predicate : (response) => data?.transaction === response?.transaction
-        return new Promise<any>((resolve, reject) => {
-            this.sendJson(data, replacer)
-            const subscription = this.onJson.subscribe((data) => {
+        return new Promise<any>(async (resolve, reject) => {
+            await this.sendJson(data, replacer)
+            this.onJson.subscribe((data) => {
                 if (predicate(data)) {
-                    subscription.unsubscribe()
                     resolve(data)
                 }
             })
@@ -65,10 +65,13 @@ export class WebSocketClient {
             return;
         }
         return new Promise<any>((resolve, reject) => {
+            this.webSocket = new WebSocket(this.url, this.protocols)
             this.timer = setTimeout(() => {
                 reject({ code: 500, reason: "Timeout" })
             }, this.timeout)
-            this.webSocket = new WebSocket(this.url, this.protocols)
+            if (this.webSocket.readyState == this.webSocket.OPEN) {
+                resolve(true)
+            }
             this.webSocket.onopen = (event) => {
                 this.initialized = true;
                 clearTimeout(this.timer)

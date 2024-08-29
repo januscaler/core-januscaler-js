@@ -1,24 +1,25 @@
-import { Subject, Subscription } from "rxjs";
+import { Subject } from "rxjs";
 import { JanuScalerJsSession } from "./JanuScalerJsSession";
 
 export class JanuScalerJsPlugin {
 
-    constructor(protected session: JanuScalerJsSession) { }
-
-    onMessage = new Subject<{plugin: string,data: any}>()
+    constructor(protected session: JanuScalerJsSession) {
+        this.onPluginMessage = new Subject()
+    }
+    public onPluginMessage: Subject<{ plugin: string, data: any, jsep?: RTCSessionDescriptionInit }>
     public pluginIdentifier: string
-    private onPluginMessageSubscription:Subscription
     public handleId?: string
     protected get webSocketClient() {
         return this.session.webSocketClient
     }
 
-    async dispose(){
-        this.onPluginMessageSubscription.unsubscribe()
+
+    async dispose() {
     }
 
     async init() {
         if (this.handleId) {
+            console.log('only once super.init')
             return;
         }
         const { data: { id } } = await this.webSocketClient.sendJsonSync({
@@ -27,16 +28,29 @@ export class JanuScalerJsPlugin {
             "session_id": this.session.sessionId
         })
         this.handleId = id
-        this.onPluginMessageSubscription=this.webSocketClient.onMessage.subscribe((event: any) => {
-            const { janus, session_id, sender, plugindata } = event ?? {}
-            if (janus === "event" && session_id === this.session.sessionId && sender === this.handleId) {
-                this.onMessage.next(plugindata)
+        this.webSocketClient.onJson.subscribe((event: any) => {
+            const { janus, session_id, sender, plugindata, jsep } = event ?? {}
+            if (janus === 'event' && session_id === this.session.sessionId && sender === this.handleId) {
+                this.onPluginMessage.next({
+                    ...plugindata,
+                    jsep
+                })
             }
         })
     }
 
+    sendTrickle(candidate?: RTCIceCandidate) {
+        const payload = {
+            "janus": "trickle",
+            "candidate": candidate,
+            "session_id": this.session.sessionId,
+            "handle_id": this.handleId
+        }
+        return this.webSocketClient.sendJsonSync(payload)
+    }
 
-    sendMessage(message: { request: string } & any, jsep?: RTCSessionDescription, predicate?: (data: any) => boolean, replacer?: (this: any, key: string, value: any) => any) {
+
+    sendMessage(message: { request: string } & any, jsep?: RTCSessionDescriptionInit, predicate?: (data: any) => boolean, replacer?: (this: any, key: string, value: any) => any) {
         const payload: any = {
             "janus": "message",
             "body": message,
@@ -44,7 +58,7 @@ export class JanuScalerJsPlugin {
             "handle_id": this.handleId
         }
         if (jsep) {
-            payload.jsep = jsep.toJSON()
+            payload.jsep = jsep
         }
         return this.webSocketClient.sendJsonSync(payload, predicate, replacer)
     }

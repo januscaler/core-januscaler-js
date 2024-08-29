@@ -1,28 +1,62 @@
 import { JanuScalerJsPlugin, JanusScalerPluginIdentifiers } from "../JanuScalerJsPlugin";
 import { JanuScalerJsSession } from "../JanuScalerJsSession";
 import _ from 'lodash'
+import { Subject } from "rxjs";
 
 export class JanuScalerVideoCallPlugin extends JanuScalerJsPlugin {
     constructor(protected session: JanuScalerJsSession) {
         super(session)
+        this.onAccepted = new Subject()
+        this.onRegistered = new Subject()
+        this.onHangup = new Subject()
+        this.onIncomingCall = new Subject()
+        this.onCalling = new Subject()
         this.pluginIdentifier = JanusScalerPluginIdentifiers.VIDEO_CALL
     }
+
+    public onRegistered: Subject<{ event: 'registered', username: string }>
+    public onIncomingCall: Subject<{ event: 'incomingcall', username: string, jsep: RTCSessionDescriptionInit }>
+    public onAccepted: Subject<{ event: 'accepted', username: string, jsep: RTCSessionDescriptionInit }>
+    public onHangup: Subject<{ event: 'hangup', username: string, reason: string }>
+    public onCalling: Subject<{ event: 'calling' }>
     async init(): Promise<void> {
         await super.init()
-    }
-
-    register(username: string, realm: string) {
-        const message = {
-            "request": "register",
-            username,
-            realm
-        }
-        return this.sendMessage(message, null, (event) => {
-            return _.get(event, 'plugindata.data.result.event') === 'registered'
+        this.onPluginMessage.subscribe(({ data, jsep }) => {
+            const { result, } = data
+            const { event } = result
+            if (event === 'registered') {
+                this.onRegistered.next(result)
+            }
+            else if (event === 'incomingcall') {
+                this.onIncomingCall.next({
+                    ...result,
+                    jsep
+                })
+            }
+            else if (event === 'accepted') {
+                this.onAccepted.next({
+                    ...result,
+                    jsep
+                })
+            }
+            else if (event === 'hangup') {
+                this.onHangup.next(result)
+            }
+            else if (event === 'calling') {
+                this.onCalling.next(result)
+            }
         })
     }
 
-    call(username: string, offer: RTCSessionDescription) {
+    register(username: string) {
+        const message = {
+            "request": "register",
+            username
+        }
+        return this.sendMessage(message)
+    }
+
+    call(username: string, offer: RTCSessionDescriptionInit) {
         const message = {
             "request": "call",
             username,
@@ -30,7 +64,7 @@ export class JanuScalerVideoCallPlugin extends JanuScalerJsPlugin {
         return this.sendMessage(message, offer)
     }
 
-    accept(answer: RTCSessionDescription) {
+    accept(answer: RTCSessionDescriptionInit) {
         const message = {
             "request": "accept",
         }
