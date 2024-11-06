@@ -5,12 +5,16 @@
 <script setup lang="ts">
 import { JanuScalerJs, WebSocketClient, JanuScalerVideoCallPlugin } from '@januscaler/core-januscaler-js';
 const wsClient = new WebSocketClient('ws://127.0.0.1:8188', {
-	token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInBlcm1pc3Npb25zIjpbbnVsbF0sImlhdCI6MTcyMzQwMjk4Mn0.WZGpk0uOwYYY7szDo3clb63KhsEk2dzs2qe1HWtwWo8',
+	token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInBlcm1pc3Npb25zIjpbbnVsbCxudWxsLG51bGwsbnVsbF0sImlhdCI6MTcyNTE4ODAyMX0.UksqWLftxm5U1otuebm90LGOIHt5wabRrJkJMbKl-p4',
 	protocols: 'januscaler-protocol'
 });
 const client = new JanuScalerJs(wsClient);
-await dummy('cj');
-await dummy('mj', 'cj');
+
+const session = await client.createSession();
+const videoCall = await session.attach(JanuScalerVideoCallPlugin);
+await videoCall.sendMessage({ request: 'register', username: 6 });
+// await dummy('cj');
+// await dummy('mj', 'cj');
 // const { plugin: p2, session: s2, pc: pc2 } = await dummyCaller();
 // pc2.onicecandidate = async (event) => {
 // 	await p2.sendTrickle(event.candidate ?? undefined);
