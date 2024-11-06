@@ -9,7 +9,9 @@ import { RouterView } from 'vue-router';
       <router-link to="/">home</router-link>
       <router-link to="/videocall">videocall</router-link>
     </div>
-   <RouterView></RouterView>
+    <Suspense>
+      <RouterView></RouterView>
+  </Suspense>
   </div>
 </template>
 
